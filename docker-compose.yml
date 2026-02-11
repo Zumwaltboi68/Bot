@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  canvas-quiz-bot:
+    build: .
+    container_name: canvas-quiz-bot
+    ports:
+      - "5000:5000"   # Flask app
+      - "6080:6080"   # noVNC web interface
+      - "5900:5900"   # VNC server (optional, for VNC clients)
+    environment:
+      - PORT=5000
+      - DISPLAY=:99
+      - SECRET_KEY=dev-secret-key-change-in-production
+      # - GROQ_API_KEY=your_key_here  # Optional: set your API key
+    volumes:
+      - ./logs:/app/logs
+      - ./cookies:/app/cookies
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Increase shared memory size for Chrome
+    shm_size: '2gb'
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
+
+# Optional: Add a volume for persistent data
+volumes:
+  logs:
+  cookies:
